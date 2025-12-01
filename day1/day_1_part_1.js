@@ -1,6 +1,6 @@
 const fs = require('fs')
 
-const fileInput = fs.readFileSync('./day_1_input_test', 'utf-8')
+const fileInput = fs.readFileSync('./day_1_input', 'utf-8')
 
 const instructions = fileInput
     .split('\n')
@@ -10,21 +10,23 @@ const instructions = fileInput
         distance: Number(line.slice(1))
     }))
 
-const rotation = {
-    zeros: 0,
-    right: 50,
-    left: 0
-}
+let zeros = 0
+let position = 50
 
 for (const instruction of instructions) {
-    if (instruction.direction === 'R') rotation.right += instruction.distance
-    else rotation.left += instruction.distance
-
-    console.log(rotation)
-
-    if (rotation.right - rotation.left === 0) {
-        rotation.zeros++
+    if (instruction.direction === 'R') {
+        position += instruction.distance
+    } else if (instruction.direction === 'L') {
+        position -= instruction.distance
     }
+
+    let distance = Math.abs(position)
+
+    if (position === 0 || distance % 100 === 0) {
+        zeros += 1
+    }
+
+    position = ((position % 100) + 100) % 100
 }
 
-console.log("Number of zeros encountered:", rotation.zeros)
+console.log("Number of zeros encountered:", zeros)

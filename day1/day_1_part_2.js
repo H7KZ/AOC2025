@@ -10,62 +10,39 @@ const instructions = fileInput
         distance: Number(line.slice(1))
     }))
 
-const rotation = {
-    zeros: 0,
-    number: 50
-}
+let zeros = 0
+let position = 50
 
 for (const instruction of instructions) {
-    console.log("----")
-    let newRotation = Object.assign({}, rotation)
+    const prevPosition = position
 
-    console.log(instruction.direction + instruction.distance)
-
-    if (instruction.direction === 'R') newRotation.number += instruction.distance
-    else newRotation.number -= instruction.distance
-
-    console.log("nw " + newRotation.number)
-
-    if (newRotation.number <= 99 && newRotation.number >= 0) {
-        if (newRotation.number === 0) rotation.zeros++
-        rotation.number = newRotation.number
-        console.log("zr " + rotation.zeros)
-        continue
+    if (instruction.direction === 'R') {
+        position += instruction.distance
+    } else if (instruction.direction === 'L') {
+        position -= instruction.distance
     }
 
-    const overflow = newRotation.number % 100
+    let rotations = 0
+    let distance = Math.abs(position)
 
-    console.log("ov " + overflow)
-
-    let numOfRotations = newRotation.number
-
-    if (overflow === 0) {
-        rotation.zeros++
-        numOfRotations -= 100
+    while (distance >= 100) {
+        rotations += 1
+        distance -= 100
     }
 
-    if (newRotation.number < 0) {
-        rotation.zeros++
+    if (position === 0) {
+        rotations += 1
     }
 
-    rotation.zeros += Math.floor(Math.abs(numOfRotations / 100))
-
-    if (rotation.number === 0) {
-        rotation.zeros--
+    if (position < 0 && prevPosition > 0) {
+        rotations += 1
+    } else if (position > 0 && prevPosition < 0) {
+        rotations += 1
     }
 
-    console.log("zr " + rotation.zeros)
+    zeros += rotations
 
-    if (overflow === 0) {
-        rotation.number = 0
-        continue
-    }
-
-    if (newRotation.number < 0) rotation.number = 100 + overflow
-    else rotation.number = overflow
-
-    console.log("fn " + rotation.number)
+    position = ((position % 100) + 100) % 100
 }
 
-console.log("Final rotation number:", rotation.number)
-console.log("Number of zeros encountered:", rotation.zeros)
+console.log("Number of zeros encountered:", zeros)
