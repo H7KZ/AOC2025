@@ -1,0 +1,13 @@
+{
+  "name": "aoc2025",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/H7KZ/AOC2025#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/H7KZ/AOC2025.git"
+  },
+  "license": "ISC",
+  "author": "Jan Komínek",
+  "type": "commonjs"
+}
