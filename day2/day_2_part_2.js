@@ -11,13 +11,21 @@ const ranges = fileInput
     }))
 
 const isIdInvalid = (id) => {
-    let repeatId = id.slice(0, id.length / 2)
+    let repeatId = ''
 
-    if (id.length % repeatId.length !== 0) {
-        return false
+    for (const i of id.slice(0, id.length / 2).split('')) {
+        repeatId += i
+
+        if (id.length % repeatId.length !== 0) {
+            continue
+        }
+
+        if ("".padStart(id.length, repeatId) === id) {
+            return true
+        }
     }
 
-    return `${repeatId}${repeatId}` === id
+    return false
 }
 
 let sumOfInvalidIds = 0
