@@ -31,5 +31,5 @@ for (const instruction of instructions) {
     position = ((position % 100) + 100) % 100
 }
 
-console.log("Took " + (performance.now() - benchmark).toFixed(6) + " ms")
+console.log("Took " + (performance.now() - benchmark).toFixed(4) + " ms")
 console.log("Number of zeros encountered:", zeros)

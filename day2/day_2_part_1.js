@@ -32,5 +32,5 @@ for (const range of ranges) {
     }
 }
 
-console.log("Took " + (performance.now() - benchmark).toFixed(6) + " ms")
+console.log("Took " + (performance.now() - benchmark).toFixed(4) + " ms")
 console.log("Final sum of all invalid Ids: " + sumOfInvalidIds)

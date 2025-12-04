@@ -70,5 +70,5 @@ do {
 
 } while (changesMade)
 
-console.log("Took " + (performance.now() - benchmark).toFixed(6) + " ms")
+console.log("Took " + (performance.now() - benchmark).toFixed(4) + " ms")
 console.log("Number of paper rolls accessible: " + forkliftAccessible)

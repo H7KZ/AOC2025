@@ -30,5 +30,5 @@ for (const bank of banks) {
     joltage += highestJoltage
 }
 
-console.log("Took " + (performance.now() - benchmark).toFixed(6) + " ms")
+console.log("Took " + (performance.now() - benchmark).toFixed(4) + " ms")
 console.log("Total joltage: " + joltage)
