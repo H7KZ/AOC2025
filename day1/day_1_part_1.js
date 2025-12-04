@@ -1,5 +1,7 @@
 const fs = require('fs')
 
+const benchmark = performance.now()
+
 const fileInput = fs.readFileSync('./day_1_input', 'utf-8')
 
 const instructions = fileInput
@@ -29,4 +31,5 @@ for (const instruction of instructions) {
     position = ((position % 100) + 100) % 100
 }
 
+console.log("Took " + (performance.now() - benchmark).toFixed(6) + " ms")
 console.log("Number of zeros encountered:", zeros)

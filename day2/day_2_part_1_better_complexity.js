@@ -1,5 +1,7 @@
 const fs = require('fs')
 
+const benchmark = performance.now()
+
 const fileInput = fs.readFileSync('./day_2_input', 'utf-8')
 
 const ranges = fileInput
@@ -44,4 +46,5 @@ for (const range of ranges) {
     }
 }
 
+console.log("Took " + (performance.now() - benchmark).toFixed(6) + " ms")
 console.log("Final sum of all invalid Ids: " + sumOfInvalidIds)

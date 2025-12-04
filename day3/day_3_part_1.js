@@ -1,5 +1,7 @@
 const fs = require('fs')
 
+const benchmark = performance.now()
+
 const fileInput = fs.readFileSync('./day_3_input', 'utf-8')
 
 const banks = fileInput
@@ -28,4 +30,5 @@ for (const bank of banks) {
     joltage += highestJoltage
 }
 
+console.log("Took " + (performance.now() - benchmark).toFixed(6) + " ms")
 console.log("Total joltage: " + joltage)
