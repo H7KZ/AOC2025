@@ -17,4 +17,8 @@ Day 3
 Day 4
   Part 1: 8.5288 ms
   Part 2: 29.0103 ms
+
+Day 5
+    Part 1: 3.8343 ms
+    Part 2: 4.4230 ms
 ```
