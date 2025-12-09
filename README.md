@@ -33,4 +33,8 @@ Day 7
 Day 8
     Part 1: 223.1531 ms
     Part 2: 246.3516 ms
+    
+Day 9
+    Part 1: 4.4951 ms
+    Part 2: WIP
 ```
