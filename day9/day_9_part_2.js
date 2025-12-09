@@ -2,7 +2,7 @@ const fs = require('fs');
 
 const benchmark = performance.now();
 
-const fileInput = fs.readFileSync('./day_9_input_test', 'utf-8')
+const fileInput = fs.readFileSync('./day_9_input', 'utf-8')
 const tiles = fileInput
     .trim()
     .split('\n')
@@ -11,84 +11,91 @@ const tiles = fileInput
         return { x, y }
     })
 
-const tileBox = []
+const isPointInPolygon = (x, y, vertices) => {
+    let inside = false
 
-// first get the lowest most left tile
-// then take the next one right, if there is no right then take the next one down
-// if not then take the next one up
-// if there is no right, down or up take the next one left
-// repeat until all of the tiles are connected in a one large box
-// take into account that there are gaps between the tiles
-// and also to do not connect tiles that are not adjacent to each other by horizontal or vertical lines
-// also do not connect already connected tiles except for the first tile
+    for (let i = 0, j = vertices.length - 1; i < vertices.length; j = i++) {
+        const xi = vertices[i].x, yi = vertices[i].y
+        const xj = vertices[j].x, yj = vertices[j].y
+
+        const isCollinear = (x - xi) * (yj - yi) === (xj - xi) * (y - yi)
+
+        if (isCollinear) {
+            if (x >= Math.min(xi, xj) && x <= Math.max(xi, xj) && y >= Math.min(yi, yj) && y <= Math.max(yi, yj)) {
+                return true
+            }
+        }
+
+        const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+
+        if (intersect) inside = !inside
+    }
+
+    return inside
+}
+
+const perimeter = new Set()
+const outside = new Set()
+
+const checkPoint = (x, y) => {
+    if (perimeter.has(`${x},${y}`)) return true
+    if (outside.has(`${x},${y}`)) return false
+
+    if (isPointInPolygon(x, y, tiles)) {
+        perimeter.add(`${x},${y}`)
+        return true
+    } else {
+        outside.add(`${x},${y}`)
+        return false
+    }
+}
+
+let largestRectangle = 0
 
 for (let i = 0; i < tiles.length; i++) {
-    const tile = tiles[i]
-    // find the lowest most left tile
-    if (i === 0) {
-        tileBox.push(tile)
-        tiles.splice(i, 1)
-        i--
-        continue
+    const tile1 = tiles[i]
+    const { x, y } = tile1
+
+    for (let j = i + 1; j < tiles.length; j++) {
+        const tile2 = tiles[j]
+        const { x: x2, y: y2 } = tile2
+
+        const startX = Math.min(x, x2)
+        const endX = Math.max(x, x2)
+        const startY = Math.min(y, y2)
+        const endY = Math.max(y, y2)
+
+        if (checkPoint(startX, startY) === false) continue
+        if (checkPoint(startX, endY) === false) continue
+        if (checkPoint(endX, startY) === false) continue
+        if (checkPoint(endX, endY) === false) continue
+
+        const width = (endX - startX) + 1
+        const height = (endY - startY) + 1
+        const area = width * height
+
+        if (area <= largestRectangle) continue
+
+        let isValidRectangle = true
+
+        for (let y = startY; y <= endY; y++) {
+            for (let x = startX; x <= endX; x++) {
+                if (checkPoint(x, y) === false) {
+                    isValidRectangle = false
+                    break
+                }
+            }
+
+            if (!isValidRectangle) break
+        }
+
+        if (isValidRectangle) {
+            largestRectangle = area
+        }
     }
 
-    const lastTile = tileBox[tileBox.length - 1]
-
-    // check right
-    if (tile.y === lastTile.y && tile.x > lastTile.x) {
-        tileBox.push(tile)
-        tiles.splice(i, 1)
-        i--
-        continue
-    }
-
-    // check down
-    if (tile.x === lastTile.x && tile.y > lastTile.y) {
-        tileBox.push(tile)
-        tiles.splice(i, 1)
-        i--
-        continue
-    }
-
-    // check up
-    if (tile.x === lastTile.x && tile.y < lastTile.y) {
-        tileBox.push(tile)
-        tiles.splice(i, 1)
-        i--
-        continue
-    }
-
-    // check left
-    if (tile.y === lastTile.y && tile.x < lastTile.x) {
-        tileBox.push(tile)
-        tiles.splice(i, 1)
-        i--
-        continue
-    }
+    console.log(`Took ${(performance.now() - benchmark).toFixed(4)} ms after checking tile ${i + 1} of ${tiles.length}`)
 }
-
-console.log(tileBox)
-
-// now we have a tileBox with all of the tiles connected in a one large box
-// we can now find the largest rectangle that can be formed within the tileBox
-// by finding the min and max x and y coordinates of the tiles in the tileBox
-
-let minX = Infinity
-let maxX = -Infinity
-let minY = Infinity
-let maxY = -Infinity
-
-for (const tile of tileBox) {
-    if (tile.x < minX) minX = tile.x
-    if (tile.x > maxX) maxX = tile.x
-    if (tile.y < minY) minY = tile.y
-    if (tile.y > maxY) maxY = tile.y
-}
-
-const width = maxX - minX + 1
-const height = maxY - minY + 1
-
-const largestRectangle = width * height
 
 console.log("Took " + (performance.now() - benchmark).toFixed(4) + " ms")
 console.log("Largest possible rectangle: " + largestRectangle)
