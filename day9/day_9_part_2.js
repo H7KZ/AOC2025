@@ -1,8 +1,11 @@
-const fs = require('fs');
+const fs = require('fs')
+const benchmark = performance.now()
 
-const benchmark = performance.now();
+// https://stackoverflow.com/questions/4833802/check-if-polygon-is-inside-a-polygon
+// https://stackoverflow.com/questions/9043805/test-if-two-lines-intersect-javascript-function
+// https://gist.github.com/leocb/248a635ff73bae91939aaf728ae2152c
 
-const fileInput = fs.readFileSync('./day_9_input', 'utf-8')
+const fileInput = fs.readFileSync('./day_9_input_test', 'utf-8')
 const tiles = fileInput
     .trim()
     .split('\n')
@@ -11,22 +14,46 @@ const tiles = fileInput
         return { x, y }
     })
 
-const isPointInPolygon = (x, y, vertices) => {
+/** @type {Array<{x1: number, y1: number, x2: number, y2: number}>} */
+const polygon = []
+
+for (let i = 0; i < tiles.length; i++) {
+    const tile1 = tiles[i]
+    const tile2 = tiles[(i + 1) % tiles.length]
+
+    polygon.push({
+        x1: tile1.x,
+        y1: tile1.y,
+        x2: tile2.x,
+        y2: tile2.y
+    })
+}
+
+const doLinesIntersect = (x1, y1, x2, y2, x3, y3, x4, y4) => {
+    if ((x1 === x2 && y1 === y2) || (x3 === x4 && y3 === y4)) {
+        return false
+    }
+
+    denominator = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1))
+
+    if (denominator === 0) {
+        return false
+    }
+
+    let ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator
+    let ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denominator
+
+    return !(ua < 0 || ua > 1 || ub < 0 || ub > 1)
+}
+
+const isPointInPolygon = (x, y, polygon) => {
     let inside = false
 
-    for (let i = 0, j = vertices.length - 1; i < vertices.length; j = i++) {
-        const xi = vertices[i].x, yi = vertices[i].y
-        const xj = vertices[j].x, yj = vertices[j].y
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+        let xi = polygon[i].x1, yi = polygon[i].y1
+        let xj = polygon[j].x1, yj = polygon[j].y1
 
-        const isCollinear = (x - xi) * (yj - yi) === (xj - xi) * (y - yi)
-
-        if (isCollinear) {
-            if (x >= Math.min(xi, xj) && x <= Math.max(xi, xj) && y >= Math.min(yi, yj) && y <= Math.max(yi, yj)) {
-                return true
-            }
-        }
-
-        const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        let intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
 
         if (intersect) inside = !inside
     }
@@ -34,20 +61,17 @@ const isPointInPolygon = (x, y, vertices) => {
     return inside
 }
 
-const perimeter = new Set()
-const outside = new Set()
+const checkIfLineIntersectsPolygon = (x1, y1, x2, y2) => {
+    for (let i = 0; i < polygon.length; i++) {
+        const edge = polygon[i]
 
-const checkPoint = (x, y) => {
-    if (perimeter.has(`${x},${y}`)) return true
-    if (outside.has(`${x},${y}`)) return false
-
-    if (isPointInPolygon(x, y, tiles)) {
-        perimeter.add(`${x},${y}`)
-        return true
-    } else {
-        outside.add(`${x},${y}`)
-        return false
+        if (doLinesIntersect(x1, y1, x2, y2, edge.x1, edge.y1, edge.x2, edge.y2) === true) {
+            console.log(x1, y1, x2, y2, edge)
+            return true
+        }
     }
+
+    return false
 }
 
 let largestRectangle = 0
@@ -65,10 +89,14 @@ for (let i = 0; i < tiles.length; i++) {
         const startY = Math.min(y, y2)
         const endY = Math.max(y, y2)
 
-        if (checkPoint(startX, startY) === false) continue
-        if (checkPoint(startX, endY) === false) continue
-        if (checkPoint(endX, startY) === false) continue
-        if (checkPoint(endX, endY) === false) continue
+        // ->
+        if (checkIfLineIntersectsPolygon(startX, startY, endX + 100_000, startY) === true) continue
+        // |
+        if (checkIfLineIntersectsPolygon(endX, startY, endX, endY + 100_000) === true) continue
+        // <-
+        if (checkIfLineIntersectsPolygon(endX, endY, 0, endY) === true) continue
+        // |
+        if (checkIfLineIntersectsPolygon(startX, endY, startX, 0) === true) continue
 
         const width = (endX - startX) + 1
         const height = (endY - startY) + 1
@@ -76,25 +104,15 @@ for (let i = 0; i < tiles.length; i++) {
 
         if (area <= largestRectangle) continue
 
-        let isValidRectangle = true
+        const centerX = startX + (width - 1) / 2
+        const centerY = startY + (height - 1) / 2
 
-        for (let y = startY; y <= endY; y++) {
-            for (let x = startX; x <= endX; x++) {
-                if (checkPoint(x, y) === false) {
-                    isValidRectangle = false
-                    break
-                }
-            }
+        if (!isPointInPolygon(centerX, centerY, polygon)) continue
 
-            if (!isValidRectangle) break
-        }
+        largestRectangle = area
 
-        if (isValidRectangle) {
-            largestRectangle = area
-        }
+        console.log(startX, startY, endX, endY)
     }
-
-    console.log(`Took ${(performance.now() - benchmark).toFixed(4)} ms after checking tile ${i + 1} of ${tiles.length}`)
 }
 
 console.log("Took " + (performance.now() - benchmark).toFixed(4) + " ms")
