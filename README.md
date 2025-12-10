@@ -37,4 +37,8 @@ Day 8
 Day 9
     Part 1: 4.4951 ms
     Part 2: -
+
+Day 10
+    Part 1: 81.0037 ms
+    Part 2: WIP
 ```
