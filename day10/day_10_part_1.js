@@ -40,7 +40,7 @@ const allPossibleNonRepeatingButtonCombinations = (buttons) => {
 let fewestButtonClicks = 0
 
 for (const machine of machines) {
-    const { lights, buttons, joltage } = machine
+    const { lights, buttons } = machine
 
     let buttonClicks = 0
     let lightStates = lights.slice().map(l => l = '.')

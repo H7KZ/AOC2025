@@ -40,5 +40,5 @@ Day 9
 
 Day 10
     Part 1: 81.0037 ms
-    Part 2: WIP
+    Part 2: 17.3504 ms
 ```
