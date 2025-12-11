@@ -1,55 +1,65 @@
 const fs = require('fs')
-const lp = require('javascript-lp-solver')
+
 const benchmark = performance.now()
 
-const fileInput = fs.readFileSync('./day_10_input', 'utf-8')
+const fileInput = fs.readFileSync('./day_11_input', 'utf-8')
 
 /**
- * @type {{lights: string[], buttons: number[][], joltage: number[]}[]}
+ * [device: number; output: number][]
+ * @type {[number, number][]}
  */
-const machines = fileInput
+const devices = fileInput
     .trim()
     .split('\n')
     .map((line) => {
-        const items = line.split(' ')
-
-        return {
-            lights: items[0].replace('[', '').replace(']', '').split(''),
-            buttons: items.slice(1, items.length - 1).map((btn) => {
-                return btn.replace('(', '').replace(')', '').split(',').map(Number)
-            }),
-            joltage: items[items.length - 1].replace('{', '').replace('}', '').split(',').map(Number)
-        }
+        const items = line.split(': ')
+        return items[1]
+            .split(' ')
+            .map(out => ([
+                items[0].trim(),
+                out.trim()
+            ]))
     })
+    .flat()
 
-let fewestLinearVectorCombinations = 0
+const countAllPathsDFS = (nodes, startNode, endNode) => {
+    const graph = {}
 
-for (const machine of machines) {
-    const { buttons, joltage } = machine
-
-    const constraints = {}
-    for (let i = 0; i < joltage.length; i++) {
-        constraints[i] = { equal: joltage[i] }
+    for (const [from, to] of nodes) {
+        if (!graph[from]) graph[from] = []
+        graph[from].push(to)
     }
 
-    const variables = {}
-    for (let i = 0; i < buttons.length; i++) {
-        variables["button" + i] = {}
-        for (const buttonIndex of buttons[i]) {
-            variables["button" + i][buttonIndex] = 1
+    let countPaths = 0
+
+    const DFS = (currentNode, visited, foundDAC, foundFFT) => {
+        if (currentNode === 'dac') foundDAC = true
+        if (currentNode === 'fft') foundFFT = true
+
+        if (currentNode === endNode) {
+            if (foundDAC && foundFFT) {
+                countPaths++
+            }
+            return
         }
 
-        variables["button" + i]["cost"] = 1
+        const neighbors = graph[currentNode] || []
+
+        for (const neighbor of neighbors) {
+            if (!visited.has(neighbor)) {
+                visited.add(neighbor)
+                DFS(neighbor, visited, foundDAC, foundFFT)
+                visited.delete(neighbor)
+            }
+        }
     }
 
-    fewestLinearVectorCombinations += lp.Solve({
-        optimize: "cost",
-        opType: "min",
-        constraints: constraints,
-        variables: variables,
-        ints: Object.fromEntries(Object.keys(variables).map((v) => [v, 1]))
-    }).result
+    DFS(startNode, new Set([startNode]), false, false)
+
+    return countPaths
 }
 
+const count = countAllPathsDFS(devices, 'svr', 'out')
+
 console.log("Took " + (performance.now() - benchmark).toFixed(4) + " ms")
-console.log("Fewest button clicks: " + fewestLinearVectorCombinations)
+console.log(`Total paths from 'svr' to 'out' visiting both 'dac' and 'fft': ${count}`)
