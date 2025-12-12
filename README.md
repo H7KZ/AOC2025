@@ -44,5 +44,9 @@ Day 10
 
 Day 11
     Part 1: 2.3298 ms
-    Part 2: ...
+    Part 2: 2.4525 ms
+    
+Day 12
+    Part 1: -
+    Part 2: -
 ```
