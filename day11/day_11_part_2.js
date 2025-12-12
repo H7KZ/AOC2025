@@ -22,7 +22,7 @@ const devices = fileInput
     })
     .flat()
 
-const countAllPathsDFS = (nodes, startNode, endNode) => {
+const countAllPathsMemo = (nodes, startNode, endNode) => {
     const graph = {}
 
     for (const [from, to] of nodes) {
@@ -30,36 +30,37 @@ const countAllPathsDFS = (nodes, startNode, endNode) => {
         graph[from].push(to)
     }
 
-    let countPaths = 0
+    const memo = new Map()
 
-    const DFS = (currentNode, visited, foundDAC, foundFFT) => {
+    const getPaths = (currentNode, foundDAC, foundFFT) => {
         if (currentNode === 'dac') foundDAC = true
         if (currentNode === 'fft') foundFFT = true
 
-        if (currentNode === endNode) {
-            if (foundDAC && foundFFT) {
-                countPaths++
-            }
-            return
+        const stateKey = `${currentNode}|${foundDAC ? 1 : 0}|${foundFFT ? 1 : 0}`
+
+        if (memo.has(stateKey)) {
+            return memo.get(stateKey)
         }
 
+        if (currentNode === endNode) {
+            return (foundDAC && foundFFT) ? 1 : 0
+        }
+
+        let totalPaths = 0
         const neighbors = graph[currentNode] || []
 
         for (const neighbor of neighbors) {
-            if (!visited.has(neighbor)) {
-                visited.add(neighbor)
-                DFS(neighbor, visited, foundDAC, foundFFT)
-                visited.delete(neighbor)
-            }
+            totalPaths += getPaths(neighbor, foundDAC, foundFFT)
         }
+
+        memo.set(stateKey, totalPaths)
+        return totalPaths
     }
 
-    DFS(startNode, new Set([startNode]), false, false)
-
-    return countPaths
+    return getPaths(startNode, false, false)
 }
 
-const count = countAllPathsDFS(devices, 'svr', 'out')
+const count = countAllPathsMemo(devices, 'svr', 'out')
 
 console.log("Took " + (performance.now() - benchmark).toFixed(4) + " ms")
 console.log(`Total paths from 'svr' to 'out' visiting both 'dac' and 'fft': ${count}`)
