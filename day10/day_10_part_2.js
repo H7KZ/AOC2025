@@ -1,5 +1,6 @@
 const fs = require('fs')
 const lp = require('javascript-lp-solver')
+
 const benchmark = performance.now()
 
 const fileInput = fs.readFileSync('./day_10_input', 'utf-8')

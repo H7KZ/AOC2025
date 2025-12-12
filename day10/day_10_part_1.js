@@ -1,4 +1,5 @@
 const fs = require('fs')
+
 const benchmark = performance.now()
 
 const fileInput = fs.readFileSync('./day_10_input', 'utf-8')
